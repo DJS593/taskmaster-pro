@@ -47,6 +47,69 @@ var saveTasks = function() {
 
 
 
+$(".list-group").on("click", "p", function() {
+  // creating an element with the class "list-group" using the on() ; is the "p" in the code stating the <p> is the delegated parent or we are creating a <p> object??
+  
+  var text = $(this)
+    .text()
+    .trim();
+
+  // this() refers to the actual elements now (post-creation); this.text pulls the text and this.trim removes any white space
+
+  var textInput = $("<textarea>")
+    .addClass("form-control")
+    .val(text);
+
+  // creating a textarea element and adding the calss "form-control" with a value of text
+
+  $(this).replaceWith(textInput);
+
+  // replacing the this() element with the textInput element; so, replacing <p> object with the <textarea> object
+
+  textInput.trigger("focus");
+
+  // trigger("focus") highlights the edit box; need to read abotu the trigger() method
+
+  // the blur object puts the edit box back to original state when I ckick elsewhere on the page
+  
+  $(".list-group").on("blur", "textarea", function() {
+    // get the textarea's current value/text
+    var text = $(this)
+      .val()
+      .trim();
+
+    // get the parent ul's id attribute
+    var status = $(this)
+      .closest(".list-group")
+      .attr("id")
+      replace("list-", "");
+
+    // get the task's position in the list of the li elements
+    var index = $(this)
+      .closest(".list-group-item")
+      .index();
+
+    // below codes puts the information into localStorage; need to better understand how calling saveTasks() is putting the defined info into localStorage
+    
+    tasks[status][index].text = text;
+    saveTasks();
+
+    // tasks is an object; tasks[status] returns an array; tasks[status][index] returns the oject at the given index in the array; tasks[status][index].text returns the text property of the object at the given index
+
+    // recreate p element
+    var taskP = $("<p>")
+      .addClass("m-1")
+      .text(text);
+
+    // replace textarea with p element
+    $(this).replaceWith(taskP);
+
+  });
+
+});
+
+
+
 
 // modal was triggered
 $("#task-form-modal").on("show.bs.modal", function() {
