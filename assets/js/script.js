@@ -254,6 +254,12 @@ $("#task-form-modal").on("shown.bs.modal", function() {
   $("#modalTaskDescription").trigger("focus");
 });
 
+// adding datepicker() to allow for a calendar to open for setting dates in task modal
+
+// $("#modalDueDate").datepicker();
+
+
+
 // save button in modal was clicked
 $("#task-form-modal .btn-primary").click(function() {
   // get form values
