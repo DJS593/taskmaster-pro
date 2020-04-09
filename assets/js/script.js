@@ -13,6 +13,9 @@ var createTask = function(taskText, taskDate, taskList) {
   // append span and p element to parent li
   taskLi.append(taskSpan, taskP);
 
+  // check due date
+  auditTask(taskLi);
+
 
   // append to ul list on the page
   $("#list-" + taskList).append(taskLi);
@@ -91,9 +94,27 @@ $(".list-group").on("click", "p", function() {
       .closest(".list-group-item")
       .index();
 
+    
+    // the tasks[status][index].text=text; appears to be giving errors so tryting a "work around."
+    if(tasks[status].length == 0) {
+      tasks[status].push({text: text, date: "04072020"}
+      )
+    }
+    else {
+      console.log(status);
+      console.log(index);
+      console.log(text);
+      console.log(tasks);
+
+      tasks[status][index-1].text = text;
+    }
+    
+    
+    
+    
     // below codes puts the information into localStorage; need to better understand how calling saveTasks() is putting the defined info into localStorage
     
-    tasks[status][index].text = text;
+    //tasks[status][index].text = text;
     saveTasks();
 
     // tasks is an object; tasks[status] returns an array; tasks[status][index] returns the oject at the given index in the array; tasks[status][index].text returns the text property of the object at the given index
@@ -124,6 +145,15 @@ $(".list-group").on("click", "span", function() {
   // swap out elements
   $(this).replaceWith(dateInput);
 
+  // enable jquery ui datepicker
+  dateInput.datepicker({
+    minDate: 1,
+    onClose: function () {
+      // when calendar is closed, force a "change" event on the 'dateInput'
+      $(this).trigger("change");
+    }
+  });
+
   // automatically focus on new element
   dateInput.trigger("focus");
 
@@ -132,7 +162,7 @@ $(".list-group").on("click", "span", function() {
 
 
   // value of the due date was changed
-  $(".list-group").on("blur", "input[type='text']", function() {
+  $(".list-group").on("change", "input[type='text']", function() {
     // get current text
     var date = $(this)
     .val()
@@ -151,7 +181,25 @@ $(".list-group").on("click", "span", function() {
     .index();
 
   // update task in array and re-save the localStorage
-  tasks[status][index].date = date;
+  
+  if(tasks[status].length == 0) {
+    tasks[status].push({text: text, date: "04072020"}
+    )
+  }
+  else {
+    console.log(status);
+    console.log(index);
+    console.log(date);
+    console.log(tasks);
+
+    tasks[status][index-1].date = date;
+  }
+  
+  // added the above, from John, because the below code, from the class work, does not appear to work (or I am doing something wrong, which is more likely)
+  
+  
+  
+  //tasks[status][index].date = date;
   saveTasks();
 
   // recreate span element with bootstrap classes
@@ -161,6 +209,9 @@ $(".list-group").on("click", "span", function() {
 
   // replace input with span element
   $(this).replaceWith(taskSpan);
+
+  // Pass task's <li> element into auditTask() to check new due date
+  auditTask($(taskSpan).closest(".list-group-item"));
 
     
 });
@@ -221,6 +272,46 @@ $(".card .list-group").sortable({
     //$(this) refers to the child element at that index - research this a little in the docs
   }
 });
+
+// adding the abilit to color code the tasks based on due date / audit the task
+
+// question - how can we use taskEl, seems like we have not defined it, is it an object, what am i missing???
+
+var auditTask = function(taskEl) {
+  // get date from task element
+  var date = $(taskEl).find("span").text().trim();
+  // ensure it worked
+  //console.log(date);
+
+  // convert to moment object at 5:00pm
+  var time = moment(date, "L").set("hour", 17);
+  // this should print out an object for the value of the date variable, but at 5:00pm of that date
+  //console.log(time);
+
+  // remove any old classes from element
+  $(taskEl).removeClass("list-group-item-warning list-group-item-danger");
+
+  // apply new class if task is near/over due date
+  if (moment().isAfter(time)) {
+    $(taskEl).addClass("list-group-item-danger");
+  }
+  else if (Math.abs(moment().diff(time, "days")) <=2) {
+    $(taskEl).addClass("list-group-item-warning");
+  }
+
+};
+
+
+
+
+
+// adding calendar functionality
+
+$("#modalDueDate").datepicker({
+  minDate: 1
+});
+
+
 
 // above adding some event listeners / research each of these in the docs / the active and deactivate events trigger once for all connected lists as soon as dragging starts and stops / the over and out events trigger when a dragged item enters or leaves a connected list / the updated event triggers when the contents of a list have changed
 
@@ -290,6 +381,8 @@ $("#remove-tasks").on("click", function() {
   }
   saveTasks();
 });
+
+
 
 // load tasks for the first time
 loadTasks();
