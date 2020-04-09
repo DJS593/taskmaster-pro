@@ -387,4 +387,13 @@ $("#remove-tasks").on("click", function() {
 // load tasks for the first time
 loadTasks();
 
+// setting a time interval so the page dates refresh in case a user leaves their desktop open and does not refresh the page manually
+
+setInterval(function() {
+  $(".card .list-group-item").each(function (el) {
+    auditTask(el);
+  });
+  
+}, (1000 * 60) *30);
+
 
